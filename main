@@ -1,0 +1,84 @@
+//@version=3
+//Created by @Supervillain
+//The altcoin index: far from perfect, but due to TV limitations its the best I can come up with
+//I have used 7 of the top coins based of market cap Oct 2018
+//Formula is 'coin * [circulating_supply] / [total_circulating_supply_of_all_index_coins]'
+//If you lose money trading on this please contact @loomdart, he will fully reimburse you
+study
+
+(title="Asset Correlation Tool v2", overlay=false)
+
+//--SETTINGS--//
+res = input(defval="D",type=resolution)
+src = input(title="Price source", type=source, defval=close)
+length = input(defval=90,minval=2,type=integer,step=1, title = "Correlation Period")
+//END
+
+//--SECURITY INPUTS--//
+sec(x) => security(x, res, src[0])
+
+s0 = security(tickerid, res, src[0]) // Current ticker
+
+use1 = input(defval=true, title="Compare with Altcoin index? (Purple)")
+sec1 = "ETHUSD*102842602/154656933719+XRPBTC*BTCUSD*40205513967/154656933719*LTCUSD*58911552/154656933719*XMRBTC*BTCUSD*16523523/154656933719*Bittrex:XLMUSD*18894758341/154656933719+EOSBTC*BTCUSD*906245118/154656933719*IOTBTC*BTCUSD*2779530283/154656933719"
+s1 = sec(sec1)
+s1u=use1 ? s1 : na
+
+use2 = input(defval=false, title="Compare with S&P 500? (Lime)")
+sec2 = "SPY"
+s2 = sec(sec2)
+s2u=use2 ? s2 : na
+
+use3 = input(defval=false, title="Compare with Gold? (Gold)")
+sec3 = "XAUUSD"
+s3 = sec(sec3)
+s3u=use3 ? s3 : na
+
+use4 = input(defval=false, title="Enable Custom Asset (Blue)")
+sec4 = input(defval="ETHBTC", title="Custom 1")
+s4 = sec(sec4)
+s4u=use4 ? s4 : na 
+
+use5 = input(defval=false, title="Enable Custom Asset (Green)")
+sec5 = input(defval="LTCUSD", title="Custom 2")
+s5 = sec(sec5)
+s5u=use5 ? s5 : na
+
+use6 = input(defval=false, title="Enable Custom Asset (Red)")
+sec6 = input(defval="XRPUSD", title="Custom 3")
+s6 = sec(sec6)
+s6u=use6 ? s6 : na 
+//END
+
+//--CALCULATIONS--//
+cor(x) => correlation(s0, x, length)
+
+cor1 = cor(s1u)
+cor2 = cor(s2u)
+cor3 = cor(s3u)
+cor4 = cor(s4u)
+cor5 = cor(s5u)
+cor6 = cor(s6u)
+//END
+
+//--INTERFACE--//
+
+//PLOTS//
+plot(cor1, linewidth=1,transp=0, style=circles, color=purple, title = "Alts")
+plot(cor2, linewidth=1,transp=0, style=circles, color=lime, title = "Stocks")
+plot(cor3, linewidth=1,transp=0, style=circles, color=orange, title = "Gold")
+plot(cor4, linewidth=1,transp=0, style=circles, color=blue, title = "Blue Asset")
+plot(cor5, linewidth=1,transp=0, style=circles, color=green, title = "Green Asset")
+plot(cor6, linewidth=1,transp=0, style=circles, color=red, title = "Red Asset")
+//END
+
+//GRID//
+h1 = hline(1, linestyle=solid, color=black, title="Strong Positive Correlation", linewidth=3)
+h2 = hline(-1, linestyle=solid, color=black, title="Strong Negative Correlation", linewidth=3)
+h3 = hline(0, linestyle=dashed, color=black, title="No Correlation")
+h4 = hline(0.70, linestyle=dashed, color=green, linewidth=1)
+h5 = hline(-0.70, linestyle=dashed, color=red, linewidth=1)
+
+fill(h4,h1, color=green, transp=90)
+fill(h5,h2, color=red, transp=90)
+//END
